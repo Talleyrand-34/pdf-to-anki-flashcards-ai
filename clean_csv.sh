@@ -1,5 +1,5 @@
 #!/bin/bash
-cp response.csv response2.csv
+cp response.csv response.csv.bck
 # Find the line number of "Question,Answer"
 line_num=$(grep -n "Question,Answer" response.csv | head -n 1 | cut -d ":" -f 1)
 
