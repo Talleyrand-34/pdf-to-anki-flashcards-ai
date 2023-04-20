@@ -63,7 +63,7 @@ for filename in os.listdir(pdf_files_path):
     csv_name = f"{csv_path}.csv"
     print(csv_name)
     
-    with open(filename, 'w') as file:
+    with open(csv_name, 'w') as file:
         writer = csv.writer(file)
-    
-    # subprocess.call("./clean_csv.sh")
+        writer.writerow([response_text])   
+    subprocess.call("./clean_csv.sh")

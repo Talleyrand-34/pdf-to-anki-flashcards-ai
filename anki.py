@@ -1,10 +1,16 @@
+import os
 import csv
-import genanki# Read flashcards from CSV
-flashcards = []
-with open('response.csv', newline='') as csvfile:
-    reader = csv.reader(csvfile)
-    for row in reader:
-        flashcards.append(row)
+import genanki
+
+# Read flashcards from CSV files
+flashcards_by_file = {}
+for file_name in os.listdir('out_csv'):
+    if file_name.endswith('.csv') and not file_name.endswith('.bck.csv'):
+        with open(f'out_csv/{file_name}', newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            flashcards = [row for row in reader]
+        flashcards_by_file[file_name] = flashcards
+
 # Define fields and template for the Anki flashcards
 model_name = 'My Model'
 field_names = ['Question', 'Answer']
@@ -26,18 +32,16 @@ my_model = genanki.Model(
     templates=[my_model_template],
 )
 
-# Create Anki deck
-my_deck = genanki.Deck(1607392319, 'My Deck')
-
-# Add flashcards to the Anki deck
-for flashcard in flashcards:
-    my_note = genanki.Note(
-        model=my_model,
-        fields=[flashcard[0], flashcard[1]]
-    )
-    my_deck.add_note(my_note)
-
-# Create Anki package and save to file
-my_package = genanki.Package(my_deck)
-my_package.write_to_file('my_deck.apkg')
-
+# Create Anki deck for each file and add flashcards to it
+for file_name, flashcards in flashcards_by_file.items():
+    deck_name = os.path.splitext(file_name)[0]
+    my_deck = genanki.Deck(1607392319, deck_name)
+    for flashcard in flashcards:
+        my_note = genanki.Note(
+            model=my_model,
+            fields=[flashcard[0], flashcard[1]]
+        )
+        my_deck.add_note(my_note)
+    # Create Anki package and save to file
+    my_package = genanki.Package(my_deck)
+    my_package.write_to_file(f'{deck_name}.apkg')
