@@ -1,4 +1,5 @@
 import os
+import random
 import csv
 import genanki
 
@@ -14,6 +15,7 @@ for file_name in os.listdir('out_csv'):
 # Define fields and template for the Anki flashcards
 model_name = 'My Model'
 field_names = ['Question', 'Answer']
+nuumber_deck=random.randint(10**9-1,10**10 -1)
 
 my_model_template = {
     'name': 'My Template',
@@ -23,7 +25,7 @@ my_model_template = {
 
 # Create Anki model
 my_model = genanki.Model(
-    1607392319,
+    nuumber_deck,
     model_name,
     fields=[
         {'name': 'Question'},
@@ -44,4 +46,5 @@ for file_name, flashcards in flashcards_by_file.items():
         my_deck.add_note(my_note)
     # Create Anki package and save to file
     my_package = genanki.Package(my_deck)
-    my_package.write_to_file(f'{deck_name}.apkg')
+    my_package.write_to_file(f'out_anki/{deck_name}.apkg')
+

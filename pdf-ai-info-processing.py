@@ -58,8 +58,9 @@ for filename in os.listdir(pdf_files_path):
     )
     response_text += response['choices'][0]['text']
     
-    print(response_text)
-    csv_path = os.path.join('out_csv', filename)
+    # print(response_text)
+    custom_filename = os.path.splitext(filename)[0]
+    csv_path = os.path.join('out_csv', custom_filename)
     csv_name = f"{csv_path}.csv"
     print(csv_name)
     
