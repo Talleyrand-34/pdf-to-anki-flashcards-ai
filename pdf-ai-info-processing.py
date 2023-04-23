@@ -20,10 +20,11 @@ for filename in os.listdir(pdf_files_path):
     reader = PdfReader(pdf_path)
     
     # Get the number of pages in the PDF
-    num_pages = len(reader.pages)
+    # num_pages = len(reader.pages)
+    num_pages = 7
     
     # Initialize the prompt string with the CSV format instructions
-    prompt_prefix = "Can you give me an answer with the structure of csv with the core ideas of this text in answer/question form? Only the CSV, do not add any other information as explanation or conclusion. Also, put it in plain text. Do not add a confirmation as 'sure' neither say 'in this example'. Also, at the beginning, do not add 'Question,Answer'."
+    prompt_prefix ="Can you give me an answer with the structure of csv with the core ideas of this text in answer/question form? Only the JSON with the fields Question and Answer, do not add any other information as explanation or conclusion. Also, put it in plain text and make sure the correct position of { } simbols. Do not add a confirmation as 'sure' neither say 'in this example'."  
     prompt_suffix = ""
     response_text=""
     # Loop through each page in the PDF and extract the text
@@ -37,6 +38,8 @@ for filename in os.listdir(pdf_files_path):
         else:
             # Query OpenAI API with the current prompt
             prompt = prompt_prefix + prompt_suffix
+            print(prompt)
+            print(f"{i}/{num_pages}")
             response = openai.Completion.create(
                 model="text-davinci-002",
                 prompt=prompt,
@@ -57,14 +60,14 @@ for filename in os.listdir(pdf_files_path):
         temperature=0.3
     )
     response_text += response['choices'][0]['text']
-    
+
     # print(response_text)
     custom_filename = os.path.splitext(filename)[0]
-    csv_path = os.path.join('out_csv', custom_filename)
-    csv_name = f"{csv_path}.csv"
-    print(csv_name)
+    json_path = os.path.join('out_json', custom_filename)
+    json_name = f"{json_path}.json"
+    print(json_name)
     
-    with open(csv_name, 'w') as file:
-        writer = csv.writer(file)
-        writer.writerow([response_text])   
-    subprocess.call("./clean_csv.sh")
+    with open(json_name, 'w') as file:
+        json.dump({'Question': response_text}, file)
+    # subprocess.call("./clean_csv.sh")
+    
