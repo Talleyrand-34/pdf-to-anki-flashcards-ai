@@ -1,69 +1,65 @@
 import os
-import random
 import json
+import random
 import genanki
 import requests
 
-# Set up the AnkiConnect API endpoint
-url = "http://localhost:8765"
-headers = {
-    "Content-Type": "application/json",
-}
+def upload_deck_to_anki(deck_path):
+    with open(deck_path, 'rb') as f:
+        deck_data = f.read()
 
-# Read flashcards from JSON string
-json_string = r"""{"Question": "\u2013Rutas aprendidas por EIGRP = 90\n\u2013Rutas aprendidas por OSPF = 110\n\u2013Rutas aprendidas por BGP = 200\n\u2013Rutas aprendidas por IS-IS = 115\n\u2013Rutas aprendidas por EGP = 140\n\u2013Rutas aprendidas por IGRP = 100\n\u2013Rutas aprendidas por RIPv2 = 120\n\u2013Rutas aprendidas por EIGRP for IPv6 = 90\n\u2013Rutas aprendidas por OSPFv3 = 110\n\u2013Rutas aprendidas por BGP4+ = 200\n\u2013Rutas aprendidas por IS-IS for IPv6 = 115\n\u2013Rutas aprendidas por Static = 1\n\u2013Rutas aprendidas por Direct = 0\n\u2013Rutas aprendidas por Local = 255\n\nQuestion:\nWhat are the different types of routing protocols?\n\nAnswer:\nThere are two types of routing protocols: interior gateway protocols (IGPs) and exterior gateway protocols (EGPs). IGPs are used for routing within an autonomous system (AS), while EGPs are used for routing between ASs."}"""
-flashcards = json.loads(json_string)
+    print(deck_path)
 
-# Check if decks.json exists and load the data
-decks_json_path = '.internal/anki/decks.json'
-decks = {}
-if os.path.exists(decks_json_path):
-    with open(decks_json_path, 'r') as f:
-        decks = json.load(f)
+    # Get the path of the script file
+    script_path = os.path.abspath(__file__)
+    
+    # Get the directory containing the script file
+    script_dir = os.path.dirname(script_path)
+    
+    # The variable 'file' should be defined before this line
+    
+    # Build the new path by combining the script directory, "out_anki", and the variable 'file'
+    new_path = os.path.join(script_dir,  deck_path)
+
+    print("New path:", new_path)
+
+    payload = {
+        "action": "importPackage",
+        "version": 6,
+        "params": {
+            "path": f"{new_path}"
+        }
+    }
+
+    response = requests.post('http://localhost:8765', json=payload)
+    response.raise_for_status()
+    print(response.json())
+    return response.json()
+
+# Read flashcards from CSV files
+flashcards_by_file = {}
+for file_name in os.listdir('out_json'):
+    if file_name.endswith('.json'):
+        with open(f'out_json/{file_name}', 'r') as jsonfile:
+            data = json.load(jsonfile)
+            flashcards = [data["Question"], data["Answer"]]
+        flashcards_by_file[file_name] = [flashcards]
+
 
 # Define fields and template for the Anki flashcards
 model_name = 'My Model'
 field_names = ['Question', 'Answer']
+nuumber_deck=random.randint(10**9-1,10**10 -1)
 
-# Generate a unique deck ID for the deck
-base_deck_id = random.randint(10**9-1, 10**10-1)
-deck_id = base_deck_id
-data = {"action": "deckNamesAndIds", "version": 6}
-response = requests.post(url, headers=headers, json=data)
-existing_decks = response.json()["result"]
-while True:
-    data = {"action": "deckNamesAndIds", "version": 6}
-    if deck_id not in [d for d in existing_decks.values()]:
-        break
-    deck_id = base_deck_id + random.randint(1, 1000000)
-
-deck_name = "my_deck_name"  # Replace this with the desired deck name
-
-# Check if deck already exists in the dictionary
-if deck_name in decks:
-    deck_id = decks[deck_name]
-else:
-    # Create a new deck and add to the dictionary
-    data = {
-        "action": "createDeck",
-        "version": 6,
-        "params": {
-            "deck": deck_name
-        }
-    }
-    response = requests.post(url, headers=headers, json=data)
-    deck_id = response.json()["result"]
-    decks[deck_name] = deck_id
-
-# Create Anki model
 my_model_template = {
     'name': 'My Template',
     'qfmt': '{{Question}}',
     'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
 }
 
+# Create Anki model
 my_model = genanki.Model(
-    deck_id,
+    nuumber_deck,
     model_name,
     fields=[
         {'name': 'Question'},
@@ -72,22 +68,26 @@ my_model = genanki.Model(
     templates=[my_model_template],
 )
 
-# Create Anki deck for the file and add flashcards to it
-my_deck = genanki.Deck(deck_id, deck_name)
-for flashcard in flashcards:
-    my_note = genanki.Note(
-model=my_model,
-fields=[str(flashcard[0]), str(flashcard[1])]
-)
+# Create Anki deck for each file and add flashcards to it
 
+for file_name, flashcards in flashcards_by_file.items():
+    deck_name = os.path.splitext(file_name)[0]
+    my_deck = genanki.Deck(1607392319, deck_name)
+    for flashcard in flashcards:
+        my_note = genanki.Note(
+            model=my_model,
+            fields=[flashcard[0], flashcard[1]]
+        )
+        my_deck.add_note(my_note)
+    # Create Anki package and save to file
+    my_package = genanki.Package(my_deck)
+    output_file_path = f'out_anki/{deck_name}.apkg'
+    my_package.write_to_file(output_file_path)
 
-# Create Anki package and save to file
-my_package = genanki.Package(my_deck)
-my_package.write_to_file(f'out_anki/{deck_name}.apkg')
-
-# Save the dictionary to the JSON file
-with open(decks_json_path, 'w') as f:
-    json.dump(decks, f)
-
-print("Export successful!")
+    # Upload the deck to Anki using AnkiConnect API
+    try:
+        upload_deck_to_anki(output_file_path)
+        print(f'Successfully uploaded {deck_name} to Anki.')
+    except Exception as e:
+        print(f'Error uploading {deck_name} to Anki: {e}')
 
