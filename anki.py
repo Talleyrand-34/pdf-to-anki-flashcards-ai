@@ -36,14 +36,14 @@ def upload_deck_to_anki(deck_path):
     print(response.json())
     return response.json()
 
-# Read flashcards from CSV files
+# Read flashcards from JSON files
 flashcards_by_file = {}
 for file_name in os.listdir('out_json'):
     if file_name.endswith('.json'):
         with open(f'out_json/{file_name}', 'r') as jsonfile:
             data = json.load(jsonfile)
-            flashcards = [data["Question"], data["Answer"]]
-        flashcards_by_file[file_name] = [flashcards]
+            flashcards = [(item["Question"], item["Answer"]) for item in data]
+        flashcards_by_file[file_name] = flashcards
 
 
 # Define fields and template for the Anki flashcards
