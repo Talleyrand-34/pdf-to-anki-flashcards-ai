@@ -1,11 +1,11 @@
 #!/bin/bash
 
-for file in ./out_csv/*; do
+for file in ./out_csv/*.csv; do
     pwd
     ls "$file"
     cat "$file"
     # Find the line number of "Question,Answer"
-    line_num=$(grep -n "Question,Answer" "$file" | head -n 1 | cut -d ":" -f 1)
+    line_num=$(grep -n "Question|Answer" "$file" | head -n 1 | cut -d ":" -f 1)
     echo "line_num = $line_num"
 
     if [ -z "$line_num" ]; then
