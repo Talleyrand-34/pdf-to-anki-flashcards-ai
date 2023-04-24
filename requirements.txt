@@ -1,0 +1,11 @@
+
+ csv
+ genanki
+ json
+ openai
+ os
+ random
+ re
+ requests
+ subprocess
+ sys
