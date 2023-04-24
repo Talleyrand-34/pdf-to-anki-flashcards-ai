@@ -1,5 +1,5 @@
 import os
-import json
+import csv
 import random
 import genanki
 import requests
@@ -36,13 +36,16 @@ def upload_deck_to_anki(deck_path):
     print(response.json())
     return response.json()
 
-# Read flashcards from JSON files
+# Read flashcards from CSV files
 flashcards_by_file = {}
-for file_name in os.listdir('out_json'):
-    if file_name.endswith('.json'):
-        with open(f'out_json/{file_name}', 'r') as jsonfile:
-            data = json.load(jsonfile)
-            flashcards = [(item["Question"], item["Answer"]) for item in data]
+for file_name in os.listdir('out_csv'):
+    if file_name.endswith('.csv'):
+        flashcards = []
+        with open(f'out_csv/{file_name}', 'r', encoding='utf-8') as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if len(row) == 2:
+                    flashcards.append((row[0], row[1]))
         flashcards_by_file[file_name] = flashcards
 
 
