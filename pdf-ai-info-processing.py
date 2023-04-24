@@ -31,22 +31,21 @@ def query(prompt_suffix):
     response_text = openai_query(prompt_prefix + prompt_suffix)
     print(response_text)
     # Construct prompt for correcting JSON syntax
-    prompt_correction = """Please correct the JSON output below to ensure it meets the following requirements:
-- The JSON structure should match the example "[
+    prompt_correction="""Please correct the JSON output below to ensure it meets the following requirements:
+
+    The JSON structure should match the example "[
     {
-        "Question": "exa",
-        "Answer": "exe"
+    "Question": "exa",
+    "Answer": "exe"
     },
     {
-        "Question": "exi",
-        "Answer": "exu"
+    "Question": "exi",
+    "Answer": "exu"
     }
-]".
-- The 'Question' and 'Answer' fields should be present for each item.
-- The JSON should be properly formatted with correct braces, brackets, commas, and quotation marks.
-- This is the last requirement, make sure all information in " " after this is inside the JSON structure.
-"
-    """
+    ]".
+    The 'Question' and 'Answer' fields should be present for each item.
+    The JSON should be properly formatted with correct braces, brackets, commas, and quotation marks.
+    Ensure that all information is included in the final JSON output, even if it is not in JSON format."""
 
     # Generate response to correct JSON syntax
     prompt = prompt_correction + response_text + """ " """
