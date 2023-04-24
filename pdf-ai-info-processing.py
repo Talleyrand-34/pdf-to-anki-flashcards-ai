@@ -63,8 +63,11 @@ def generate_response_text(num_pages):
 with open("key.json") as f:
     data = json.load(f)
 
-pdf_files_path = './pdf_files'
 openai.api_key = data["openai_api_key"]
+with open("anki_tag.json") as f:
+    data = json.load(f)
+tag = data["tag"]
+pdf_files_path = './pdf_files'
 if '-a' in sys.argv:
     pdf_files = [f for f in os.listdir(pdf_files_path) if f.endswith('.pdf')]
 elif '-f' in sys.argv:
@@ -94,7 +97,7 @@ for filename in os.listdir(pdf_files_path):
     print("//////////")
     print(failed_lines)
     print("//////////")
-    custom_filename = os.path.splitext(filename)[0]
+    custom_filename = f"{tag}_"+os.path.splitext(filename)[0]
     csv_path = os.path.join('out_csv', custom_filename)
     csv_name = f"{csv_path}.csv"
     fail_path = os.path.join('failed', custom_filename)

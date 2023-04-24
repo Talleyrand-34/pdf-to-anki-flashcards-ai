@@ -1,5 +1,6 @@
 import os
 import csv
+import json
 import random
 import genanki
 import requests
@@ -36,6 +37,9 @@ def upload_deck_to_anki(deck_path):
     print(response.json())
     return response.json()
 
+with open("anki_tag.json") as f:
+    data = json.load(f)
+tag = data["tag"]
 # Read flashcards from CSV files
 flashcards_by_file = {}
 for file_name in os.listdir('out_csv'):
@@ -79,6 +83,7 @@ for file_name, flashcards in flashcards_by_file.items():
     for flashcard in flashcards:
         my_note = genanki.Note(
             model=my_model,
+            tags=["imported",tag],
             fields=[flashcard[0], flashcard[1]]
         )
         my_deck.add_note(my_note)
