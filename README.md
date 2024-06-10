@@ -8,4 +8,12 @@ Transform your pdfs into anki flashcard with gpt
 
 ## Result
     If you want to add directly your notes to Anki, open Anki with the Ankiconnect plugin added.
-If not you have your notes in out_anki
+    If not you have your notes in out_anki
+
+## How it works
+
+1. Gets info from pdfs
+2. Gets anki cards from 
+3. Cleans csv from trash
+4. Saves into anki file
+5. (Optional) Syncs with anki through local link, updating anki flashcard with zero user interaction
